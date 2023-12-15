@@ -1,23 +1,6 @@
 name: Industrialisation continue sur le serveur AWS (Tomcat)
 on: push
 jobs:
-  Deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - run: |
-          jar cvf BoschcregutCharles.war *
-           mvn -B clean package
-    - name: copy file via ssh password
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.HOST_DNS }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        port: ${{ secrets.DEPLOY_PORT }}
-        source: "BoschcregutCharles.war"
-        target: "/opt/tomcat/webapps"
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -39,4 +22,20 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: myapp
-        path: target/*.war
+        path: "/opt/tomcat/webapps/*.war"
+  Deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - run: |
+           mvn -B clean package
+    - name: copy file via ssh password
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST_DNS }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: ${{ secrets.DEPLOY_PORT }}
+        source: "BoschcregutCharles.war"
+        target: "/opt/tomcat/webapps"
